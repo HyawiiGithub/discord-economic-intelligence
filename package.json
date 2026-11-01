@@ -1,0 +1,19 @@
+{
+  "name": "per-server-economy-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Per-server economic bot with a state bank, treasury, companies and public markets",
+  "main": "bot.js",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "start": "node bot.js",
+    "web": "node src/web/server.js",
+    "test": "node tests/run.js"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.9",
+    "discord.js": "^14.27.0"
+  }
+}

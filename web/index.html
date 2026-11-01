@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0f0d0a">
+    <title>Economic Intelligence · Dashboard</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="login-view" id="loginView">
+    <div class="login-card">
+        <div class="brand-mark large">E</div>
+        <div class="eyebrow">SERVER ADMINISTRATION</div>
+        <h1>Economic Intelligence</h1>
+        <p>Control the economy, companies, markets, permissions, themes and update feeds for every server where you hold <strong>Manage Server</strong> or <strong>Administrator</strong>.</p>
+        <button class="discord-button" id="discordLogin">Continue with Discord</button>
+        <button class="ghost wide" id="tokenLoginButton">Use API token instead</button>
+        <div class="login-note">Discord login is handled by a Cloudflare Worker. The bot API verifies the signed session and checks your server permissions.</div>
+        <div class="modal-error" id="loginError"></div>
+    </div>
+</div>
+
+<div class="shell hidden" id="appShell">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-mark">E</div>
+            <div>
+                <div class="brand-title">Economic Intelligence</div>
+                <div class="brand-sub" id="brandSub">server ledger</div>
+            </div>
+        </div>
+        <div class="guild-picker">
+            <label for="guildSelect">SERVER</label>
+            <select id="guildSelect"></select>
+        </div>
+        <nav class="nav" id="nav">
+            <button data-page="overview" class="active"><span>◈</span> Overview</button>
+            <button data-page="market"><span>▤</span> Goods market</button>
+            <button data-page="stocks"><span>↗</span> Stock market</button>
+            <button data-page="crypto"><span>◉</span> Crypto desk</button>
+            <button data-page="companies"><span>▥</span> Companies</button>
+            <button data-page="news"><span>◫</span> News & signals</button>
+            <button data-page="social"><span>♟</span> People & reputation</button>
+            <button data-page="treasury"><span>▦</span> Treasury</button>
+            <button data-page="permissions"><span>◇</span> Permissions</button>
+            <button data-page="config"><span>⚙</span> Configuration</button>
+            <button data-page="audit"><span>≡</span> Audit trail</button>
+        </nav>
+        <div class="side-foot">
+            <div class="user-chip" id="userChip">
+                <div class="avatar" id="userAvatar">?</div>
+                <div class="user-meta"><strong id="userName">Not signed in</strong><span id="userRole">—</span></div>
+            </div>
+            <button id="settingsButton" class="ghost wide">API connection</button>
+            <button id="logoutButton" class="ghost wide hidden">Sign out</button>
+            <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">not connected</span></div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div class="top-left">
+                <button id="menuButton" class="icon-button" aria-label="Menu">☰</button>
+                <div>
+                    <div class="eyebrow" id="pageEyebrow">SERVER LEDGER</div>
+                    <h1 id="pageTitle">Overview</h1>
+                </div>
+            </div>
+            <div class="top-right">
+                <div class="cycle-chip" id="cycleChip">cycle —</div>
+                <div class="date-chip" id="dateChip"></div>
+                <button id="refreshButton" class="icon-button" title="Refresh">↻</button>
+            </div>
+        </header>
+        <section class="content" id="content">
+            <div class="loading">Connecting to the ledger…</div>
+        </section>
+    </main>
+</div>
+
+<div class="modal-backdrop hidden" id="settingsModal">
+    <div class="modal">
+        <div class="modal-head">
+            <div>
+                <div class="eyebrow">CONNECTION</div>
+                <h2>Dashboard API</h2>
+            </div>
+            <button class="icon-button" data-close="settingsModal">✕</button>
+        </div>
+        <p class="muted">The static dashboard reads from and writes to the bot API. Use the Discord login or a local API token. Keep this site behind Cloudflare Access if it is private.</p>
+        <label>API base URL
+            <input id="apiBaseInput" type="url" placeholder="https://api.example.com" autocomplete="off">
+        </label>
+        <label>API token
+            <input id="apiTokenInput" type="password" placeholder="ECON_API_TOKEN" autocomplete="off">
+        </label>
+        <label>Discord login URL
+            <input id="authUrlInput" type="url" placeholder="https://login.example.workers.dev/login" autocomplete="off">
+        </label>
+        <div class="modal-actions">
+            <button class="ghost" data-close="settingsModal">Cancel</button>
+            <button class="primary" id="connectButton">Connect with token</button>
+        </div>
+        <div class="modal-error" id="settingsError"></div>
+    </div>
+</div>
+
+<div class="modal-backdrop hidden" id="confirmModal">
+    <div class="modal">
+        <div class="modal-head">
+            <div>
+                <div class="eyebrow danger-text">DANGER ZONE</div>
+                <h2 id="confirmTitle">Confirm action</h2>
+            </div>
+            <button class="icon-button" data-close="confirmModal">✕</button>
+        </div>
+        <p id="confirmText" class="muted"></p>
+        <label>Type the confirmation phrase
+            <input id="confirmInput" autocomplete="off">
+        </label>
+        <div class="modal-actions">
+            <button class="ghost" data-close="confirmModal">Cancel</button>
+            <button class="danger" id="confirmButton">Confirm</button>
+        </div>
+        <div class="modal-error" id="confirmError"></div>
+    </div>
+</div>
+
+<div class="modal-backdrop hidden" id="memberModal">
+    <div class="modal wide-modal">
+        <div class="modal-head">
+            <div>
+                <div class="eyebrow">MEMBER LOOKUP</div>
+                <h2>Member profile</h2>
+            </div>
+            <button class="icon-button" data-close="memberModal">✕</button>
+        </div>
+        <div class="inline-form">
+            <input id="memberInput" placeholder="Discord user id" autocomplete="off">
+            <button class="primary" id="memberButton">Look up</button>
+        </div>
+        <div id="memberResult" class="member-result muted">Enter a user id to inspect activity, reputation and balances.</div>
+    </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="./config.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
